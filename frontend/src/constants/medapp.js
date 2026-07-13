@@ -7,6 +7,7 @@ export const screens = {
   ordonnances: 'ordonnances',
   ordonnanceForm: 'ordonnance-form',
   pdfPreview: 'pdf-preview',
+  agenda: 'agenda',
   settings: 'settings'
 }
 

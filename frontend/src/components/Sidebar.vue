@@ -7,7 +7,8 @@ import {
   Settings,
   LogOut,
   Stethoscope,
-  ChevronLeft
+  ChevronLeft,
+  Calendar
 } from 'lucide-vue-next'
 import { useMedAppState } from '../composables/useMedAppState.js'
 import { screens } from '../constants/medapp.js'
@@ -24,12 +25,13 @@ const NAV = [
   { s: screens.dashboard, label: "Tableau de bord", icon: LayoutDashboard },
   { s: screens.patients, label: "Patients", icon: Users },
   { s: screens.ordonnances, label: "Ordonnances", icon: FileText },
+  { s: screens.agenda, label: "Agenda", icon: Calendar },
   { s: screens.settings, label: "Paramètres", icon: Settings },
 ]
 
 const isActive = (screen) => {
-  if (screen === screens.patients && currentScreen.value === screens.patientForm) return true
-  if (screen === screens.ordonnances && currentScreen.value === screens.ordonnanceForm) return true
+  if (screen === screens.patients && [screens.patientForm, screens.patientDetail].includes(currentScreen.value)) return true
+  if (screen === screens.ordonnances && [screens.ordonnanceForm, screens.pdfPreview].includes(currentScreen.value)) return true
   return currentScreen.value === screen
 }
 

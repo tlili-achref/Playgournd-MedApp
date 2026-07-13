@@ -12,6 +12,7 @@ import PatientDetailScreen from './components/screens/PatientDetailScreen.vue'
 import OrdonnancesScreen from './components/screens/OrdonnancesScreen.vue'
 import OrdonnanceFormScreen from './components/screens/OrdonnanceFormScreen.vue'
 import PDFPreviewScreen from './components/screens/PDFPreviewScreen.vue'
+import AgendaScreen from './components/screens/AgendaScreen.vue'
 import SettingsScreen from './components/screens/SettingsScreen.vue'
 
 const { currentScreen } = useMedAppState()
@@ -30,6 +31,7 @@ const screenComponents = {
   [screens.ordonnances]: OrdonnancesScreen,
   [screens.ordonnanceForm]: OrdonnanceFormScreen,
   [screens.pdfPreview]: PDFPreviewScreen,
+  [screens.agenda]: AgendaScreen,
   [screens.settings]: SettingsScreen
 }
 
