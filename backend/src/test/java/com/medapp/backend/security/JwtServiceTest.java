@@ -41,5 +41,21 @@ public class JwtServiceTest {
         //then
         assertEquals("user-id-123" , userId);
     }
+
+    @Test
+    void extractRole_retourneRoleUtilisateur_pourTokenValide(){
+        //
+        User user = new User("medcin@medapp.com" , "hashedPassword" , "Dupont" , "Jean" , Role.MEDECIN , true , LocalDateTime.now() , null);
+        user.setId("user-id-123");
+
+        String token = jwtService.generateToken(user);
+
+        //when
+        String role  = jwtService.extractRole(token);
+
+        //then
+        assertEquals("MEDECIN", role);
+
+    }
     
 }
