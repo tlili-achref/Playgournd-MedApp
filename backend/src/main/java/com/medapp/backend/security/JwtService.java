@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.medapp.backend.model.User;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -55,6 +56,18 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("role" , String.class);
+    }
+
+    public boolean isTokenValid(String token){
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
     }
     
 }

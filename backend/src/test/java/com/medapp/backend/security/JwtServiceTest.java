@@ -60,5 +60,23 @@ public class JwtServiceTest {
         assertEquals("MEDECIN", role);
 
     }
+
+    @Test
+    void isTokenValid_retourneFalse_pourTokenExpire(){
+        //
+        JwtService jwtServiceExpirationImmediate = new JwtService("une-cle-secrete-suffisament-longue-pour-les-tests-hs356",  -1000);//expiration dans le passe 
+
+        User user = new User("medcin@medapp.com" , "hashedPassword" , "Dupont" , "Jean" , Role.MEDECIN , true , LocalDateTime.now() , null);
+        user.setId("user-id-123");
+
+        String tokenExpire = jwtServiceExpirationImmediate.generateToken(user);
+
+        //when
+        boolean estValide = jwtService.isTokenValid(tokenExpire);
+
+        //then
+        assertEquals(false, estValide);        
+
+    }
     
 }
