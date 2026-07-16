@@ -82,4 +82,17 @@ public class JwtAuthenticationFilterTest {
         verify(filterChain).doFilter(request , response);
     }
 
+    @Test
+    void doFilterInternal_neFaitRien_siTokenInvalid()throws Exception {
+        //
+        when(request.getHeader("Authorization")).thenReturn("Bearer token-invalide-ou-corrompu");
+
+        //when
+        filter.doFilterInternal(request, response, filterChain);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assertEquals(null, auth);
+        verify(filterChain).doFilter(request , response);
+
+    }
+
 }
