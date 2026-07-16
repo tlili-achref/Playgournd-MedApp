@@ -31,40 +31,55 @@ public class JwtAuthenticationFilterTest {
         1800000
     );
 
-        private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService);
+    private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService);
 
-        @Mock
-        private HttpServletRequest request;
+    @Mock
+    private HttpServletRequest request;
 
-        @Mock
-        private HttpServletResponse response;
+    @Mock
+    private HttpServletResponse response;
 
-        @Mock
-        private FilterChain filterChain;
+    @Mock
+    private FilterChain filterChain;
 
-        @AfterEach
-        void nettoyageContextSecurity(){
-            SecurityContextHolder.clearContext();
-        }
+    @AfterEach
+    void nettoyageContextSecurity(){
+        SecurityContextHolder.clearContext();
+    }
 
-        @Test
-        void doFilterInternal_authentifieUtilisateur_siTokenValide()throws Exception {
-            //
-            User user = new User("medcin@medapp.com" , "hashedPassword" , "Dupont" , "Jean" , Role.MEDECIN , true , LocalDateTime.now() , null);
-            user.setId("user-id-123");
-            String token = jwtService.generateToken(user);
+    @Test
+    void doFilterInternal_authentifieUtilisateur_siTokenValide()throws Exception {
+        //
+        User user = new User("medcin@medapp.com" , "hashedPassword" , "Dupont" , "Jean" , Role.MEDECIN , true , LocalDateTime.now() , null);
+        user.setId("user-id-123");
+        String token = jwtService.generateToken(user);
 
-            when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
 
-            //when
-            filter.doFilterInternal(request , response , filterChain);
+        //when
+        filter.doFilterInternal(request , response , filterChain);
 
-            //then
-            Authentication auth  = SecurityContextHolder.getContext().getAuthentication();
-            assertNotNull(auth);
-            assertEquals("user-id-123", auth.getPrincipal());
-            verify(filterChain).doFilter(request , response);
+        //then
+        Authentication auth  = SecurityContextHolder.getContext().getAuthentication();
+        assertNotNull(auth);
+        assertEquals("user-id-123", auth.getPrincipal());
+        verify(filterChain).doFilter(request , response);
 
-        }
-    
+    }
+
+    @Test 
+    void doFilterInternal_neFaitRien_siAucunHeaderAuthorization()throws Exception {
+        //
+
+        when(request.getHeader("Authorization")).thenReturn(null);
+
+        //when
+        filter.doFilterInternal(request , response , filterChain);
+
+        //then
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assertEquals(null, auth);
+        verify(filterChain).doFilter(request , response);
+    }
+
 }
