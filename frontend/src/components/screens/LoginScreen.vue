@@ -117,7 +117,7 @@ const backToLogin = () => { view.value = 'login' }
         </div>
         
         <div class="flex gap-3">
-          <div v-for="s in ['Sécurisé RGPD', 'Multi-rôles', '99.9% uptime']" :key="s" class="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20">
+          <div v-for="s in ['Sécurisé', 'Multi-rôles', '99.9% uptime']" :key="s" class="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20">
             <span class="text-white text-xs font-medium">{{ s }}</span>
           </div>
         </div>
