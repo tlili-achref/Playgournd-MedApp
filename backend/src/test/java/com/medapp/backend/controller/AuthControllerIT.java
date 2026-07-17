@@ -124,5 +124,16 @@ public class AuthControllerIT {
                     .andDo(print())
                     .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void login_retourne401_siCompteInexistant()throws Exception {
+        //
+        LoginRequest loginRequest = new LoginRequest("inconnu@medapp.com", "motDePasse1!");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isUnauthorized());      
+    }
     
 }
