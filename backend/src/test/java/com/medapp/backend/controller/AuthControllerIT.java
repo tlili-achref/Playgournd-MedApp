@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medapp.backend.dto.LoginRequest;
 import com.medapp.backend.dto.RegisterRequest;
 import com.medapp.backend.model.Role;
+import com.medapp.backend.model.User;
+import com.medapp.backend.repository.UserRepository;
 
 import org.testcontainers.junit.jupiter.Container;
 
@@ -34,6 +36,9 @@ public class AuthControllerIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository  userRepository;
 
     @Test
     void register_retourne201_siInscriptionValide()throws Exception {
@@ -136,4 +141,30 @@ public class AuthControllerIT {
                     .andExpect(status().isUnauthorized());      
     }
     
+
+     @Test
+    void login_retourne403_siCompteDesactive()throws Exception {
+        //
+        RegisterRequest registerRequest = new RegisterRequest(
+                "desactive@medapp.com", "MotDePasse123!", "Dupont", "Jean", Role.MEDECIN
+        );
+        mockMvc.perform(post("/api/auth/register")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
+            
+        //puis on le desactive directement en base 
+        User user = userRepository.findByEmail("desactive@medapp.com").orElseThrow();
+        user.setActif(false);
+        userRepository.save(user);
+
+        LoginRequest loginRequest = new LoginRequest("desactive@medapp.com", "MotDePasse123!");
+
+        //when then
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isForbidden());
+    }
+
 }
