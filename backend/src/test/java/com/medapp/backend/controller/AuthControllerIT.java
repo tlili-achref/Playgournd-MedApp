@@ -67,5 +67,17 @@ public class AuthControllerIT {
                 .andExpect(status().isConflict());
 
     }
+
+    @Test 
+    void register_retourne400_siMotDePasseInvalide()throws Exception {//password is too weak 
+        //
+        RegisterRequest requet = new RegisterRequest("autre@medapp@com", "123", "Dupont","Jean",Role.MEDECIN);
+        
+        //when /then
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requet)))
+                .andExpect(status().isBadRequest());       
+    }
     
 }
