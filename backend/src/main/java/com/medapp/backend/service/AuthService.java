@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.medapp.backend.dto.LoginResult;
 import com.medapp.backend.exception.CompteDesactiveException;
 import com.medapp.backend.exception.EmailDejaUtiliseException;
 import com.medapp.backend.exception.IdentifiantsInvalidesException;

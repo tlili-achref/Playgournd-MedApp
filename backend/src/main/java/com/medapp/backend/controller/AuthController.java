@@ -7,7 +7,7 @@ import com.medapp.backend.dto.LoginRequest;
 import com.medapp.backend.dto.RegisterRequest;
 import com.medapp.backend.model.User;
 import com.medapp.backend.service.AuthService;
-import com.medapp.backend.service.LoginResult;
+import com.medapp.backend.dto.LoginResult;
 
 import jakarta.validation.Valid;
 

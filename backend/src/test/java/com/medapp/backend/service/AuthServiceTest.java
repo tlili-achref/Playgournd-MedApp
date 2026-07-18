@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.medapp.backend.dto.LoginResult;
 import com.medapp.backend.exception.CompteDesactiveException;
 import com.medapp.backend.exception.EmailDejaUtiliseException;
 import com.medapp.backend.exception.IdentifiantsInvalidesException;

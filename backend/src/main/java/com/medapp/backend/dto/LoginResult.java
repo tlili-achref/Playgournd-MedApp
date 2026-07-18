@@ -1,4 +1,4 @@
-package com.medapp.backend.service;
+package com.medapp.backend.dto;
 
 import com.medapp.backend.model.Role;
 
