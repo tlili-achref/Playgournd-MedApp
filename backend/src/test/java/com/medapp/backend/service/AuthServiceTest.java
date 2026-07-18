@@ -167,7 +167,7 @@ public class AuthServiceTest {
 
     @Test
     void refreshToken_retouneNouvelAccessToken_siRefreshTokenValide(){
-        User user = new User("medecin@medapp.com" , "hashedPassword123!", "Dupont", "Jean", Role.MEDECIN , false , LocalDateTime.now() , null);
+        User user = new User("medecin@medapp.com" , "hashedPassword123!", "Dupont", "Jean", Role.MEDECIN , true , LocalDateTime.now() , null);
         user.setId("user-id-123");
         String refreshToken = "valid-refresh-token";
 
@@ -192,4 +192,17 @@ public class AuthServiceTest {
         assertThrows(IdentifiantsInvalidesException.class, () -> authService.refreshToken(refreshTokenInvalide));
     }
     
+    @Test 
+    void refreshToken_lanceException_siCompteDesactive(){
+
+        User user = new User("medecin@medapp.com" , "hashedPassword123!", "Dupont", "Jean", Role.MEDECIN , false , LocalDateTime.now() , null);
+        user.setId("user-id-123");
+        String refreshToken = "valid-refresh-token";
+
+        when(jwtService.isRefreshTokenValid(refreshToken)).thenReturn(true);
+        when(jwtService.extractUserId(refreshToken)).thenReturn("user-id-123");
+        when(userRepository.findById("user-id-123")).thenReturn(Optional.of(user));
+
+        assertThrows(CompteDesactiveException.class, () -> authService.refreshToken(refreshToken));
+    }
 }
