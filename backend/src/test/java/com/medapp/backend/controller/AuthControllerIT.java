@@ -196,4 +196,16 @@ public class AuthControllerIT {
                     .andExpect(jsonPath("$.accessToken").exists());          
     }
 
+    @Test
+    void refreshToken_retourne401_siRefreshTokenInvalide() throws Exception {
+        // Given
+        RefreshTokenRequest refreshRequest = new RefreshTokenRequest("token-invalide-ou-corrompu");
+
+        // When / Then
+        mockMvc.perform(post("/api/auth/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
 }
