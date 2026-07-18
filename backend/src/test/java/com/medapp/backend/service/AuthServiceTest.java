@@ -164,5 +164,22 @@ public class AuthServiceTest {
         ); 
 
     }
+
+    @Test
+    void refreshToken_retouneNouvelAccessToken_siRefreshTokenValide(){
+        User user = new User("medecin@medapp.com" , "hashedPassword123!", "Dupont", "Jean", Role.MEDECIN , false , LocalDateTime.now() , null);
+        user.setId("user-id-123");
+        String refreshToken = "valid-refresh-token";
+
+        when(jwtService.isRefreshTokenValid(refreshToken)).thenReturn(true);
+        when(jwtService.extractUserId(refreshToken)).thenReturn("user-id-123");
+        when(userRepository.findById("user-id-123")).thenReturn(Optional.of(user));
+        when(jwtService.generateAccessToken(user)).thenReturn("nouveau-accesss-token");
+
+        LoginResult result = authService.refreshToken(refreshToken);
+
+        assertEquals("nouveau-accesss-token", result.accessToken());
+        assertEquals(refreshToken, result.refreshToken());
+    }
     
 }

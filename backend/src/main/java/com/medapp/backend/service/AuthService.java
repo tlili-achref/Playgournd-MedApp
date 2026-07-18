@@ -59,5 +59,17 @@ public class AuthService {
         String refreshToken = jwtService.generateRefreshToken(user);
         return new LoginResult(accessToken , refreshToken , user.getRole());
     }
+
+    public LoginResult refreshToken(String refreshToken) {
+        if(!jwtService.isRefreshTokenValid(refreshToken)){
+            throw new IdentifiantsInvalidesException();
+        }
+
+        String userid = jwtService.extractUserId(refreshToken);
+        User user = userRepository.findById(userid).orElseThrow(IdentifiantsInvalidesException::new);
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+        return new LoginResult(newAccessToken , refreshToken , user.getRole()); // non rotation pour le moment a discutee 
+    }
     
 }
