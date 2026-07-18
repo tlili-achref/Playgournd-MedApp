@@ -54,6 +54,9 @@ public class AuthService {
         if(!user.isActif()){
             throw new CompteDesactiveException();
         }
+
+        user.setDerniereConnexion(LocalDateTime.now());
+        userRepository.save(user);
         
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);

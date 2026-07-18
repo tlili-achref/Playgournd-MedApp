@@ -205,4 +205,24 @@ public class AuthServiceTest {
 
         assertThrows(CompteDesactiveException.class, () -> authService.refreshToken(refreshToken));
     }
+
+    @Test
+    void login_metAJourDerniereConnexion_siIdentifiantsCorrects() {
+        // Given
+        User user = new User("medecin@medapp.com", "hashedPassword123", "Dupont", "Jean",
+                Role.MEDECIN, true, LocalDateTime.now().minusDays(1), null); // derniereConnexion = null au depart
+
+        when(userRepository.findByEmail("medecin@medapp.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("MotDePasse123!", "hashedPassword123")).thenReturn(true);
+        when(jwtService.generateAccessToken(user)).thenReturn("fake-access-token");
+        when(jwtService.generateRefreshToken(user)).thenReturn("fake-refresh-token");
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        authService.login("medecin@medapp.com", "MotDePasse123!");
+
+        // Then
+        assertNotNull(user.getDerniereConnexion());
+        verify(userRepository).save(user);
+    }
 }
