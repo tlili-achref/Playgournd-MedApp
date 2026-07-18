@@ -96,4 +96,23 @@ public class JwtAuthenticationFilterTest {
 
     }
 
+   @Test
+    void doFilterInternal_neFaitRien_siRefreshTokenUtiliseCommeAccessToken() throws Exception {
+        // Given
+        User user = new User("medecin@medapp.com", "hashedPassword", "Dupont", "Jean",
+                Role.MEDECIN, true, LocalDateTime.now(), null);
+        user.setId("user-id-123");
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + refreshToken);
+
+        // When
+        filter.doFilterInternal(request, response, filterChain);
+
+        // Then
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assertEquals(null, auth);
+        verify(filterChain).doFilter(request, response);
+    }
+
 }
