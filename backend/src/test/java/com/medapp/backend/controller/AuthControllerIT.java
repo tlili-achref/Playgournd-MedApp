@@ -11,6 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medapp.backend.dto.LoginRequest;
+import com.medapp.backend.dto.RefreshTokenRequest;
 import com.medapp.backend.dto.RegisterRequest;
 import com.medapp.backend.model.Role;
 import com.medapp.backend.model.User;
@@ -166,6 +167,33 @@ public class AuthControllerIT {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isForbidden());
+    }
+
+    @Test 
+    void refreshToken_retourne200_siRefreshtokenValide() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest("refresh-test@medapp.com",
+            "MotDePasse123!", "Dupont", "Jean", Role.MEDECIN);
+
+        mockMvc.perform(post("/api/auth/register")
+                    .contentType("application/json")
+                    .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
+
+        LoginRequest loginRequest = new LoginRequest("refresh-test@medapp.com", "MotDePasse123!");
+        String loginResponse = mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+        String refreshToken = objectMapper.readTree(loginResponse).get("refreshToken").asText();
+        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(refreshToken);
+
+        mockMvc.perform(post("/api/auth/refresh-token")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(refreshRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.accessToken").exists());          
     }
 
 }

@@ -8,6 +8,7 @@ import com.medapp.backend.dto.RegisterRequest;
 import com.medapp.backend.model.User;
 import com.medapp.backend.service.AuthService;
 import com.medapp.backend.dto.LoginResult;
+import com.medapp.backend.dto.RefreshTokenRequest;
 
 import jakarta.validation.Valid;
 
@@ -41,6 +42,13 @@ public class AuthController {
         LoginResult result = authService.login(request.email() , request.password());
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResult> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        LoginResult result = authService.refreshToken(request.refreshToken());
+        return ResponseEntity.ok(result);
+    }
+    
     
     
     
