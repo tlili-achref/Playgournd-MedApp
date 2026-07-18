@@ -181,5 +181,15 @@ public class AuthServiceTest {
         assertEquals("nouveau-accesss-token", result.accessToken());
         assertEquals(refreshToken, result.refreshToken());
     }
+
+    @Test 
+    void refreshToken_lanceException_siRefreshTokenInvalide() {
+        //
+        String refreshTokenInvalide = "token-invalide-ou-expire";
+
+        when(jwtService.isRefreshTokenValid(refreshTokenInvalide)).thenReturn(false);
+
+        assertThrows(IdentifiantsInvalidesException.class, () -> authService.refreshToken(refreshTokenInvalide));
+    }
     
 }
