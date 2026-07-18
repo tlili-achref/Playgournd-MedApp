@@ -104,7 +104,8 @@ public class AuthControllerIT {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andExpect(jsonPath("$.refreshToken").exists())
                 .andExpect(jsonPath("$.role").value("MEDECIN"));
     }
 

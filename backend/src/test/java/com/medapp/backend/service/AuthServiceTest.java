@@ -2,6 +2,7 @@ package com.medapp.backend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,13 +106,15 @@ public class AuthServiceTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(password, "hashedPassword123")).thenReturn(true);
         when(jwtService.generateAccessToken(user)).thenReturn("fake-jwt-token");
+        when(jwtService.generateRefreshToken(user)).thenReturn("fake-refresh-token");
 
         //
         LoginResult result = authService.login(email , password);
 
 
         //then
-        assertEquals("fake-jwt-token", result.token());
+        assertEquals("fake-jwt-token", result.accessToken());
+        assertNotNull(result.refreshToken());
         assertEquals(Role.MEDECIN, result.role());
     }
 
