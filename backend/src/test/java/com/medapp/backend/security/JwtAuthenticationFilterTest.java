@@ -28,7 +28,8 @@ public class JwtAuthenticationFilterTest {
 
     private final JwtService jwtService = new JwtService(
         "une-cle-secrete-suffisamment-longue-pour-les-tests-hs256",
-        1800000
+        1800000,
+        604800000
     );
 
     private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService);

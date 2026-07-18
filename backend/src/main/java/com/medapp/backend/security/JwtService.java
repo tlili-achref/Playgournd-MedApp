@@ -18,18 +18,21 @@ import io.jsonwebtoken.security.Keys;
 public class JwtService {
 
     private final SecretKey secretKey;
-    private final long expirationMs;
+    private final long accessExpirationMs;
+    private final long refreshExpirationMs;
 
     public JwtService(
         @Value("${jwt.secret}") String secret,
-        @Value("${jwt.expiration-ms}") long expirationMs){
+        @Value("${jwt.expiration-ms}") long accessExpirationMs,
+        @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs){
             this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-            this.expirationMs = expirationMs;
+            this.accessExpirationMs = accessExpirationMs;
+            this.refreshExpirationMs = refreshExpirationMs;
         }
 
     public String generateAccessToken(User user) {
         Date maintenant = new Date();
-        Date expiration = new Date(maintenant.getTime() + expirationMs);
+        Date expiration = new Date(maintenant.getTime() + accessExpirationMs);
 
         return Jwts.builder()
                 .subject(user.getId())
@@ -39,6 +42,29 @@ public class JwtService {
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String generateRefreshToken(User  user){
+        Date maintenant = new Date();
+        Date expiration = new Date(maintenant.getTime() + refreshExpirationMs);
+
+        return Jwts.builder()
+                .subject(user.getId())
+                .claim("role", user.getRole().name())
+                .claim("type" , "refresh")
+                .issuedAt(maintenant)
+                .expiration(expiration)
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String extractTokenType(String token){
+        return Jwts.parser()
+            .verifyWith(secretKey)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("type" , String.class);
     }
 
     public String extractUserId(String token){
@@ -59,7 +85,7 @@ public class JwtService {
                 .get("role" , String.class);
     }
 
-    public boolean isTokenValid(String token){
+    private boolean isTokenValid(String token){
         try {
             Jwts.parser()
                     .verifyWith(secretKey)
@@ -69,6 +95,14 @@ public class JwtService {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    public boolean isAccessTokenValid(String token){
+        return isTokenValid(token) && "access".equals(extractTokenType(token));
+    }
+
+     public boolean isRefreshTokenValid(String token){
+        return isTokenValid(token) && "refresh".equals(extractTokenType(token));
     }
     
 }

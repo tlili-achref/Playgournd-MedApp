@@ -23,4 +23,5 @@ logging:
 
 jwt:
   secret: "une-cle-suffisament-longue-pour-hs256-en-dev"
-  expiration-ms: 1800000 #30 minutes
+  expiration-ms: 1800000 #30 minutes(access token)
+  refresh-expiration-ms: 604800000  #7 jours (refresh token)
