@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -19,9 +20,11 @@ import com.medapp.backend.repository.UserRepository;
 
 import org.testcontainers.junit.jupiter.Container;
 
+import org.springframework.test.web.servlet.MvcResult;
+import jakarta.servlet.http.Cookie;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -91,24 +94,24 @@ public class AuthControllerIT {
 
     @Test
     void login_retourne200_siIdentifiantsCorrects() throws Exception {
-        // Given — on crée d'abord un utilisateur via register
         RegisterRequest registerRequest = new RegisterRequest(
                 "login-test@medapp.com", "MotDePasse123!", "Dupont", "Jean", Role.MEDECIN
         );
         mockMvc.perform(post("/api/auth/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(registerRequest)));
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
 
         LoginRequest loginRequest = new LoginRequest("login-test@medapp.com", "MotDePasse123!");
 
-        // When / Then
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
-                .andExpect(jsonPath("$.refreshToken").exists())
-                .andExpect(jsonPath("$.role").value("MEDECIN"));
+                .andExpect(jsonPath("$.refreshToken").doesNotExist())  // nouvelle vérification
+                .andExpect(cookie().exists("refresh_token"))            // nouvelle vérification
+                .andExpect(cookie().httpOnly("refresh_token", true));   // nouvelle vérification
     }
 
 
@@ -170,31 +173,30 @@ public class AuthControllerIT {
                     .andExpect(status().isForbidden());
     }
 
-    @Test 
+    @Test
     void refreshToken_retourne200_siRefreshtokenValide() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("refresh-test@medapp.com",
-            "MotDePasse123!", "Dupont", "Jean", Role.MEDECIN);
-
+        RegisterRequest registerRequest = new RegisterRequest(
+                "refresh-test@medapp.com", "MotDePasse123!", "Dupont", "Jean", Role.MEDECIN
+        );
         mockMvc.perform(post("/api/auth/register")
-                    .contentType("application/json")
-                    .content(objectMapper.writeValueAsString(registerRequest)))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
 
         LoginRequest loginRequest = new LoginRequest("refresh-test@medapp.com", "MotDePasse123!");
-        String loginResponse = mockMvc.perform(post("/api/auth/login")
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                    .andExpect(status().isOk())
-                    .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isOk())
+                .andReturn();
 
-        String refreshToken = objectMapper.readTree(loginResponse).get("refreshToken").asText();
-        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(refreshToken);
+        Cookie refreshCookie = loginResult.getResponse().getCookie("refresh_token");
 
+        // When / Then
         mockMvc.perform(post("/api/auth/refresh-token")
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(refreshRequest)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.accessToken").exists());          
+                        .cookie(refreshCookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").exists());
     }
 
     @Test
