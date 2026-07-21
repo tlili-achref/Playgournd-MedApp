@@ -24,7 +24,6 @@ describe('RegisterView.vue', () => {
           Shield: true,
           ChevronLeft: true,
           Mail: true,
-          MapPin: true,
           Lock: true,
           Loader2: true,
           Check: true,
@@ -37,13 +36,12 @@ describe('RegisterView.vue', () => {
   // Helper to fill all fields with valid data
   const fillValidForm = async (wrapper) => {
     const inputs = wrapper.findAll('input')
-    // firstName, lastName, email, specialty, password, confirm
+    // firstName, lastName, email, password, confirm
     await inputs[0].setValue('Jean')
     await inputs[1].setValue('Martin')
     await inputs[2].setValue('jean.martin@clinique.fr')
-    await inputs[3].setValue('Médecine générale')
+    await inputs[3].setValue('motdepasse123')
     await inputs[4].setValue('motdepasse123')
-    await inputs[5].setValue('motdepasse123')
   }
 
   it('renders register form by default', () => {
@@ -92,7 +90,11 @@ describe('RegisterView.vue', () => {
   it('shows an error if password is too short', async () => {
     const wrapper = createWrapper()
     const inputs = wrapper.findAll('input')
-    await inputs[4].setValue('abc')
+    // Fill required fields to isolate the password-too-short error
+    await inputs[0].setValue('Jean')
+    await inputs[1].setValue('Martin')
+    await inputs[2].setValue('jean.martin@clinique.fr')
+    await inputs[3].setValue('abc') // password (too short, < 6 chars)
     await wrapper.find('form').trigger('submit')
 
     expect(wrapper.text()).toContain('Le mot de passe doit contenir au moins 6 caractères.')
@@ -101,8 +103,8 @@ describe('RegisterView.vue', () => {
   it('shows an error if passwords do not match', async () => {
     const wrapper = createWrapper()
     const inputs = wrapper.findAll('input')
-    await inputs[4].setValue('motdepasse123')
-    await inputs[5].setValue('autremotdepasse')
+    await inputs[3].setValue('motdepasse123')   // password
+    await inputs[4].setValue('autremotdepasse') // confirm (different)
     await wrapper.find('form').trigger('submit')
 
     expect(wrapper.text()).toContain('Les mots de passe ne correspondent pas.')

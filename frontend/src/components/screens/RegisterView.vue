@@ -1,12 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import {
-  Stethoscope,
   ClipboardList,
+  Stethoscope,
   Shield,
   ChevronLeft,
   Mail,
-  MapPin,
   Lock,
   Loader2,
   Check,
@@ -19,7 +18,7 @@ const emit = defineEmits(['backToLogin'])
 const loading = ref(false)
 const regDone = ref(false)
 const submitted = ref(false)
-const reg = ref({ firstName: '', lastName: '', email: '', role: 'doctor', specialty: '', password: '', confirm: '' })
+const reg = ref({ firstName: '', lastName: '', email: '', role: 'doctor', password: '', confirm: '' })
 const updReg = (k, v) => { reg.value = { ...reg.value, [k]: v } }
 
 const REG_ROLES = [
@@ -132,14 +131,6 @@ const backToLogin = () => {
         </div>
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-sm font-medium text-foreground">{{ reg.role === 'doctor' ? 'Spécialité' : 'Établissement' }}</label>
-        <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-          <Stethoscope v-if="reg.role === 'doctor'" class="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
-          <MapPin v-else class="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
-          <input type="text" :value="reg.specialty" @input="updReg('specialty', $event.target.value)" :placeholder="reg.role === 'doctor' ? 'Médecine générale' : 'Clinique Saint-Louis'" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none pl-9 pr-3" />
-        </div>
-      </div>
 
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-foreground">Mot de passe *</label>
