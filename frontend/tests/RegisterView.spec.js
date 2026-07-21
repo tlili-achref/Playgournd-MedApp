@@ -16,7 +16,7 @@ describe('RegisterView.vue', () => {
     return mount(RegisterView, {
       global: {
         directives: {
-          motion: () => {}
+          motion: () => { }
         },
         stubs: {
           Stethoscope: true,
@@ -34,6 +34,18 @@ describe('RegisterView.vue', () => {
     })
   }
 
+  // Helper to fill all fields with valid data
+  const fillValidForm = async (wrapper) => {
+    const inputs = wrapper.findAll('input')
+    // firstName, lastName, email, specialty, password, confirm
+    await inputs[0].setValue('Jean')
+    await inputs[1].setValue('Martin')
+    await inputs[2].setValue('jean.martin@clinique.fr')
+    await inputs[3].setValue('Médecine générale')
+    await inputs[4].setValue('motdepasse123')
+    await inputs[5].setValue('motdepasse123')
+  }
+
   it('renders register form by default', () => {
     const wrapper = createWrapper()
     expect(wrapper.text()).toContain('Créer un compte')
@@ -42,46 +54,91 @@ describe('RegisterView.vue', () => {
 
   it('emits backToLogin event when clicking top Retour button', async () => {
     const wrapper = createWrapper()
-    
-    // Find the first button which is the top Retour button
     const buttons = wrapper.findAll('button')
     await buttons[0].trigger('click')
-    
     expect(wrapper.emitted()).toHaveProperty('backToLogin')
   })
-  
+
   it('emits backToLogin event when clicking bottom Annuler button', async () => {
     const wrapper = createWrapper()
-    
-    // Annuler button is inside form
     const buttons = wrapper.findAll('button')
-    // Find the button with text containing "Annuler"
     const annulerBtn = buttons.find(b => b.text().includes('Annuler'))
     await annulerBtn.trigger('click')
-    
     expect(wrapper.emitted()).toHaveProperty('backToLogin')
+  })
+
+  // --- Tests de validation ---
+
+  it('shows validation errors when submitting with all empty fields', async () => {
+    const wrapper = createWrapper()
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.text()).toContain('Le prénom est requis.')
+    expect(wrapper.text()).toContain('Le nom est requis.')
+    expect(wrapper.text()).toContain("L'email est requis.")
+    expect(wrapper.text()).toContain('Le mot de passe est requis.')
+    expect(wrapper.text()).toContain('Veuillez confirmer le mot de passe.')
+  })
+
+  it('shows an error for invalid email format', async () => {
+    const wrapper = createWrapper()
+    const inputs = wrapper.findAll('input')
+    await inputs[2].setValue('email-invalide')
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.text()).toContain("L'adresse email n'est pas valide.")
+  })
+
+  it('shows an error if password is too short', async () => {
+    const wrapper = createWrapper()
+    const inputs = wrapper.findAll('input')
+    await inputs[4].setValue('abc')
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.text()).toContain('Le mot de passe doit contenir au moins 6 caractères.')
+  })
+
+  it('shows an error if passwords do not match', async () => {
+    const wrapper = createWrapper()
+    const inputs = wrapper.findAll('input')
+    await inputs[4].setValue('motdepasse123')
+    await inputs[5].setValue('autremotdepasse')
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.text()).toContain('Les mots de passe ne correspondent pas.')
+  })
+
+  it('does not show success when form is invalid', async () => {
+    const wrapper = createWrapper()
+    await wrapper.find('form').trigger('submit')
+    await vi.advanceTimersByTimeAsync(1400)
+
+    // Success should not appear because the form is invalid
+    expect(wrapper.text()).not.toContain('Demande envoyée !')
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 
   it('handles valid submission, shows success and allows return to login', async () => {
     const wrapper = createWrapper()
-    
+
     // Ensure form is submitted
-    await wrapper.find('form').trigger('submit.prevent')
-    
-    // Initially, there shouldn't be success text yet, it's loading
+    await fillValidForm(wrapper)
+    await wrapper.find('form').trigger('submit')
+
+    // Should still be loading
     expect(wrapper.text()).not.toContain('Demande envoyée !')
-    
-    // Fast-forward timeout (1400ms) for success state
+
+    // Advance the timer (1400ms)
     await vi.advanceTimersByTimeAsync(1400)
-    
-    // Now it should show success
+
+    // Success message should now be visible
     expect(wrapper.text()).toContain('Demande envoyée !')
     expect(wrapper.find('form').exists()).toBe(false)
-    
-    // Click "Retour à la connexion" on success screen
+
+    // Click the "Retour à la connexion" button
     const returnBtn = wrapper.find('button')
     await returnBtn.trigger('click')
-    
+
     expect(wrapper.emitted()).toHaveProperty('backToLogin')
   })
 })

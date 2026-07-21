@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   Stethoscope,
   ClipboardList,
@@ -18,6 +18,7 @@ const emit = defineEmits(['backToLogin'])
 
 const loading = ref(false)
 const regDone = ref(false)
+const submitted = ref(false)
 const reg = ref({ firstName: '', lastName: '', email: '', role: 'doctor', specialty: '', password: '', confirm: '' })
 const updReg = (k, v) => { reg.value = { ...reg.value, [k]: v } }
 
@@ -27,8 +28,34 @@ const REG_ROLES = [
   { v: 'admin', label: 'Administrateur', icon: Shield }
 ]
 
+const errors = computed(() => {
+  const e = {}
+  if (!reg.value.firstName.trim()) e.firstName = 'Le prénom est requis.'
+  if (!reg.value.lastName.trim()) e.lastName = 'Le nom est requis.'
+  if (!reg.value.email.trim()) {
+    e.email = "L'email est requis."
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reg.value.email)) {
+    e.email = "L'adresse email n'est pas valide."
+  }
+  if (!reg.value.password) {
+    e.password = 'Le mot de passe est requis.'
+  } else if (reg.value.password.length < 6) {
+    e.password = 'Le mot de passe doit contenir au moins 6 caractères.'
+  }
+  if (!reg.value.confirm) {
+    e.confirm = 'Veuillez confirmer le mot de passe.'
+  } else if (reg.value.password !== reg.value.confirm) {
+    e.confirm = 'Les mots de passe ne correspondent pas.'
+  }
+  return e
+})
+
+const isFormValid = computed(() => Object.keys(errors.value).length === 0)
+
 const submitRegister = (e) => {
   e.preventDefault()
+  submitted.value = true
+  if (!isFormValid.value) return
   loading.value = true
   setTimeout(() => {
     loading.value = false
@@ -70,24 +97,27 @@ const backToLogin = () => {
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-foreground">Prénom *</label>
-          <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+          <div :class="cn('relative flex items-center rounded-xl border bg-background focus-within:ring-2 focus-within:ring-blue-500/20 transition-all', submitted && errors.firstName ? 'border-red-500 focus-within:border-red-500' : 'border-border focus-within:border-blue-500')">
             <input type="text" :value="reg.firstName" @input="updReg('firstName', $event.target.value)" placeholder="Jean" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none px-3" />
           </div>
+          <p v-if="submitted && errors.firstName" class="text-xs text-red-500 mt-0.5">{{ errors.firstName }}</p>
         </div>
         <div class="space-y-1.5">
           <label class="text-sm font-medium text-foreground">Nom *</label>
-          <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+          <div :class="cn('relative flex items-center rounded-xl border bg-background focus-within:ring-2 focus-within:ring-blue-500/20 transition-all', submitted && errors.lastName ? 'border-red-500 focus-within:border-red-500' : 'border-border focus-within:border-blue-500')">
             <input type="text" :value="reg.lastName" @input="updReg('lastName', $event.target.value)" placeholder="Martin" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none px-3" />
           </div>
+          <p v-if="submitted && errors.lastName" class="text-xs text-red-500 mt-0.5">{{ errors.lastName }}</p>
         </div>
       </div>
 
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-foreground">Email professionnel *</label>
-        <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+        <div :class="cn('relative flex items-center rounded-xl border bg-background focus-within:ring-2 focus-within:ring-blue-500/20 transition-all', submitted && errors.email ? 'border-red-500 focus-within:border-red-500' : 'border-border focus-within:border-blue-500')">
           <Mail class="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input type="email" :value="reg.email" @input="updReg('email', $event.target.value)" placeholder="jean.martin@clinique.fr" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none pl-9 pr-3" />
         </div>
+        <p v-if="submitted && errors.email" class="text-xs text-red-500 mt-0.5">{{ errors.email }}</p>
       </div>
 
       <div class="space-y-1.5">
@@ -113,22 +143,24 @@ const backToLogin = () => {
 
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-foreground">Mot de passe *</label>
-        <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+        <div :class="cn('relative flex items-center rounded-xl border bg-background focus-within:ring-2 focus-within:ring-blue-500/20 transition-all', submitted && errors.password ? 'border-red-500 focus-within:border-red-500' : 'border-border focus-within:border-blue-500')">
           <Lock class="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input type="password" :value="reg.password" @input="updReg('password', $event.target.value)" placeholder="••••••••" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none pl-9 pr-3" />
         </div>
+        <p v-if="submitted && errors.password" class="text-xs text-red-500 mt-0.5">{{ errors.password }}</p>
       </div>
 
       <div class="space-y-1.5">
         <label class="text-sm font-medium text-foreground">Confirmer le mot de passe *</label>
-        <div class="relative flex items-center rounded-xl border border-border bg-background focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+        <div :class="cn('relative flex items-center rounded-xl border bg-background focus-within:ring-2 focus-within:ring-blue-500/20 transition-all', submitted && errors.confirm ? 'border-red-500 focus-within:border-red-500' : 'border-border focus-within:border-blue-500')">
           <Lock class="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input type="password" :value="reg.confirm" @input="updReg('confirm', $event.target.value)" placeholder="••••••••" class="w-full h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none pl-9 pr-3" />
         </div>
+        <p v-if="submitted && errors.confirm" class="text-xs text-red-500 mt-0.5">{{ errors.confirm }}</p>
       </div>
 
       <div class="flex flex-col gap-3 mt-4 pt-2">
-        <button type="submit" :disabled="loading" class="w-full inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200/50 dark:shadow-blue-900/30 px-5 py-2.5 text-base gap-2">
+        <button type="submit" :disabled="loading || (submitted && !isFormValid)" class="w-full inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200/50 dark:shadow-blue-900/30 px-5 py-2.5 text-base gap-2">
           <template v-if="loading"><Loader2 class="w-4 h-4 animate-spin" />Envoi en cours…</template>
           <template v-else><Check class="w-4 h-4" />Envoyer la demande</template>
         </button>
