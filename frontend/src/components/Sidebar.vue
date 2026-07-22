@@ -43,9 +43,16 @@ const isActive = (screen) => {
 }
 
 const initials = computed(() => {
-  if (!authUser.value?.name) return 'DR'
-  const parts = authUser.value.name.split(' ')
-  return parts.map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  const displayName = authUser.value?.name || authUser.value?.email || 'User'  
+  return displayName.slice(0, 1).toUpperCase()
+})
+
+const roleLabel = computed(() => {
+  const role = authUser.value?.role
+  if (role === 'medecin') return 'Médecin'
+  if (role === 'secretaire') return 'Secrétaire'
+  if (role === 'admin') return 'Administrateur'
+  return 'Utilisateur'
 })
 </script>
 
@@ -128,8 +135,8 @@ const initials = computed(() => {
           {{ initials }}
         </div>
         <div v-if="!collapsed" class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-foreground truncate">{{ authUser?.name || 'Dr. Martin' }}</p>
-          <p class="text-xs text-muted-foreground truncate">Médecin</p>
+          <p class="text-sm font-semibold text-foreground truncate">{{ authUser?.name || authUser?.email || 'Utilisateur' }}</p>
+          <p class="text-xs text-muted-foreground truncate">{{ roleLabel }}</p>
         </div>
         <button
           v-if="!collapsed"
