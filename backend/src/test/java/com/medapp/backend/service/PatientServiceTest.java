@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.medapp.backend.exception.DonneesInvalidesException;
 import com.medapp.backend.exception.NumeroSecuriteSocialeDejaExistantException;
 import com.medapp.backend.model.Patient;
 import com.medapp.backend.model.Sexe;
@@ -66,6 +67,20 @@ public class PatientServiceTest {
         assertThrows(NumeroSecuriteSocialeDejaExistantException.class, () -> 
             patientService.creerPatient(nouveauPatient)
         );
+        verify(patientRepository , never()).save(any(Patient.class));
+    }
+
+
+    @Test
+    void creerPatient_lanceException_siDonneesInvalides(){
+        //given
+        Patient patientDateFuture = new Patient("Dupont", "Marie", LocalDate.now().plusDays(1), Sexe.F,
+                "12345678", "12 rue de la Paix", "1900512123457",
+                List.of(), null, null, null);
+
+        assertThrows(DonneesInvalidesException.class, () -> 
+            patientService.creerPatient(patientDateFuture));
+
         verify(patientRepository , never()).save(any(Patient.class));
     }
     

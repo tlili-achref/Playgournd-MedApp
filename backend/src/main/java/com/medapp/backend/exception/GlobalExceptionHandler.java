@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String , String>> handleNumeroSecuriteSocialeDejaExistant(NumeroSecuriteSocialeDejaExistantException ex){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message" , ex.getMessage()));
     }
+
+    @ExceptionHandler(DonneesInvalidesException.class)
+    public ResponseEntity<Map<String , String >> handleDonneesInvalides(DonneesInvalidesException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , ex.getMessage()));
+    }
+
     
 
 

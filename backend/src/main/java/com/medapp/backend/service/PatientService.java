@@ -1,9 +1,11 @@
 package com.medapp.backend.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
+import com.medapp.backend.exception.DonneesInvalidesException;
 import com.medapp.backend.exception.NumeroSecuriteSocialeDejaExistantException;
 import com.medapp.backend.model.Patient;
 import com.medapp.backend.repository.PatientRepository;
@@ -18,6 +20,10 @@ public class PatientService {
     }
     
     public Patient creerPatient(Patient patient){
+
+        if(patient.getDateNaissance() != null && patient.getDateNaissance().isAfter(LocalDate.now())){
+            throw new DonneesInvalidesException("La date de naissance ne peut pas etre dans le futur.");
+        }
         if(patientRepository.findByNumeroSecuriteSociale(patient.getNumeroSecuriteSociale()).isPresent()){
             throw new NumeroSecuriteSocialeDejaExistantException(patient.getNumeroSecuriteSociale());
         }
