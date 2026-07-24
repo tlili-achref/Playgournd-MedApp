@@ -136,7 +136,21 @@ public class PatientServiceTest {
 
     }
 
+    @Test
+    void modifierPatient_lanceException_siIdInexistant() {
+        // given
+        String idInexistant = "id-inexistant";
+        Patient patientModifie = new Patient("Dupont", "Marie", LocalDate.of(1990, 5, 12), Sexe.F,
+                "99999999", "12 rue de la Paix", "1900512123459",
+                List.of(), null, null, null);
 
-    
+        when(patientRepository.findById(idInexistant)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(PatientIntrouvableException.class, () ->
+            patientService.modifierPatient(idInexistant, patientModifie)
+        );
+        verify(patientRepository, never()).save(any(Patient.class));
+    }
     
 }
