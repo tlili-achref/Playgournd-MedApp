@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.medapp.backend.exception.DonneesInvalidesException;
 import com.medapp.backend.exception.NumeroSecuriteSocialeDejaExistantException;
+import com.medapp.backend.exception.PatientIntrouvableException;
 import com.medapp.backend.model.Patient;
 import com.medapp.backend.model.Sexe;
 import com.medapp.backend.repository.PatientRepository;
@@ -99,12 +100,18 @@ public class PatientServiceTest {
         when(patientRepository.findByNomContainingIgnoreCase(requete)).thenReturn(List.of(patient1));
         when(patientRepository.findByPrenomContainingIgnoreCase(requete)).thenReturn(List.of(patient2));
 
-        System.out.println("DEBUG findByNom = " + patientRepository.findByNomContainingIgnoreCase(requete));
-        System.out.println("DEBUG findByPrenom = " + patientRepository.findByPrenomContainingIgnoreCase(requete));
-
+       
         List<Patient> resultats = patientService.rechercherPatients(requete);
-        System.out.println("DEBUG resultats ids = " + resultats.stream().map(Patient::getId).toList());
         assertEquals(2, resultats.size());
+    }
+
+    @Test
+    void obtenirPatient_lanceException_siIdInexistant(){
+        String idInexistant = "id-inexistant";
+        when(patientRepository.findById(idInexistant)).thenReturn(Optional.empty());
+
+        assertThrows(PatientIntrouvableException.class, () -> 
+            patientService.obtenirPatient(idInexistant));
     }
     
 }

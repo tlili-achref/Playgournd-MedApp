@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.medapp.backend.exception.DonneesInvalidesException;
 import com.medapp.backend.exception.NumeroSecuriteSocialeDejaExistantException;
+import com.medapp.backend.exception.PatientIntrouvableException;
 import com.medapp.backend.model.Patient;
 import com.medapp.backend.repository.PatientRepository;
 
@@ -47,5 +48,9 @@ public class PatientService {
             resultats.put(patient.getId() , patient);
         }
         return new ArrayList<>(resultats.values());
+    }
+
+    public Patient obtenirPatient(String id){
+        return patientRepository.findById(id).orElseThrow(() -> new PatientIntrouvableException(id));
     }
 }

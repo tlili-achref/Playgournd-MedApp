@@ -43,6 +43,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message" , ex.getMessage()));
     }
 
+    @ExceptionHandler(PatientIntrouvableException.class)
+    public ResponseEntity<Map<String , String>> handlePatientIntrouvalbe(PatientIntrouvableException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message" , ex.getMessage()));
+    }
+
     
 
 
