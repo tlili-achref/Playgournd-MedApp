@@ -59,6 +59,16 @@ public class PatientService {
         return new ArrayList<>(resultats.values());
     }
 
+    public List<Patient> rechercherPatientsParMedecin(String requete, String medecinId) {
+        List<Patient> parNom = patientRepository.findByMedecinReferentAndNomContainingIgnoreCase(medecinId, requete);
+        List<Patient> parPrenom = patientRepository.findByMedecinReferentAndPrenomContainingIgnoreCase(medecinId, requete);
+
+        Map<String, Patient> resultats = new LinkedHashMap<>();
+        for (Patient patient : parNom)   { resultats.put(patient.getId(), patient); }
+        for (Patient patient : parPrenom){ resultats.put(patient.getId(), patient); }
+        return new ArrayList<>(resultats.values());
+    }
+
     public Patient obtenirPatient(String id){
         return patientRepository.findById(id).orElseThrow(() -> new PatientIntrouvableException(id));
     }
@@ -111,6 +121,10 @@ public class PatientService {
 
     public Page<Patient> listerPatients(Pageable pageable){
         return patientRepository.findAll(pageable);
+    }
+
+    public Page<Patient> listerPatientsParMedecin(String medecinId, Pageable pageable){
+        return patientRepository.findByMedecinReferent(medecinId, pageable);
     }
 
 

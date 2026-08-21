@@ -13,4 +13,6 @@ public interface OrdonnanceRepository extends MongoRepository<Ordonnance , Strin
 
     List<Ordonnance> findByPatientId(String patientId);
     List<Ordonnance> findByPatientIdAndStatut(String patientId, StatutOrdonnance statut);
+    List<Ordonnance> findByMedecinId(String medecinId);
+    List<Ordonnance> findByPatientIdAndMedecinId(String patientId, String medecinId);
 }

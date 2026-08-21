@@ -78,6 +78,18 @@ public class OrdonnanceService {
             .toList();
         }
 
+    public List<Ordonnance> obtenirHistoriqueParMedecin(String patientId, String medecinId) {
+        patientRepository.findById(patientId)
+            .orElseThrow(() -> new PatientIntrouvableException(patientId));
+
+        return ordonnanceRepository.findByPatientIdAndMedecinId(patientId, medecinId)
+            .stream()
+            .map(this::synchroniserStatut)
+            .sorted(Comparator.comparing(Ordonnance::getDateEmission).reversed()
+                .thenComparing(Ordonnance::getId))
+            .toList();
+    }
+
     public Ordonnance obtenirOrdonnance(String id ) {
     
         Ordonnance ordonnance = ordonnanceRepository.findById(id)

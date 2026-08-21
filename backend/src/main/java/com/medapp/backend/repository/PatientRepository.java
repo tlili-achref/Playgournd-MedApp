@@ -12,4 +12,7 @@ public interface PatientRepository extends MongoRepository<Patient , String> {
     List<Patient> findByNomContainingIgnoreCase(String nom);    
     List<Patient> findByPrenomContainingIgnoreCase(String prenom);
     Optional<Patient> findByNumeroSecuriteSociale(String numeroSecuriteSociale);
+    org.springframework.data.domain.Page<Patient> findByMedecinReferent(String medecinId, org.springframework.data.domain.Pageable pageable);
+    List<Patient> findByMedecinReferentAndNomContainingIgnoreCase(String medecinId, String nom);
+    List<Patient> findByMedecinReferentAndPrenomContainingIgnoreCase(String medecinId, String prenom);
 } 

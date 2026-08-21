@@ -68,9 +68,16 @@ public class OrdonnanceController {
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<OrdonnanceResponse>> obtenirHistorique(
         @PathVariable String patientId,
-        @RequestParam (required = false) StatutOrdonnance statut) {
-        
-            List<Ordonnance> ordonnances = ordonnanceService.obtenirHistorique(patientId, statut);
+        @RequestParam (required = false) StatutOrdonnance statut,
+        @AuthenticationPrincipal UtilisateurAuthentifie utilisateur) {
+
+            List<Ordonnance> ordonnances;
+            if (utilisateur.role() == com.medapp.backend.model.Role.MEDECIN) {
+                // Doctors only see their own prescriptions for this patient
+                ordonnances = ordonnanceService.obtenirHistoriqueParMedecin(patientId, utilisateur.id());
+            } else {
+                ordonnances = ordonnanceService.obtenirHistorique(patientId, statut);
+            }
 
             List<OrdonnanceResponse> response = ordonnances.stream()
                 .map(ordonnanceMapper::versResponse)

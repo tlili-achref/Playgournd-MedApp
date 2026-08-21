@@ -96,7 +96,14 @@ public class PatientController {
     @GetMapping
     public ResponseEntity<Page<PatientResponse>> listerPatients(Pageable pageable ,
          @AuthenticationPrincipal UtilisateurAuthentifie utilisateur) {
-        Page<Patient> patients = patientService.listerPatients(pageable);
+
+        Page<Patient> patients;
+        if (utilisateur.role() == com.medapp.backend.model.Role.MEDECIN) {
+            // Doctors only see their own patients (those for whom they are the referring doctor)
+            patients = patientService.listerPatientsParMedecin(utilisateur.id(), pageable);
+        } else {
+            patients = patientService.listerPatients(pageable);
+        }
 
         Page<PatientResponse> responses = patients.map(patient -> {
             Patient patientMasque = patientService.appliquerMasquageSelonRole(patient, utilisateur.role());
@@ -108,7 +115,13 @@ public class PatientController {
     @GetMapping("/search")
     public ResponseEntity<List<PatientResponse>> rechercherPatients(@RequestParam String query , 
         @AuthenticationPrincipal UtilisateurAuthentifie utilisateur){
-        List<Patient> patients = patientService.rechercherPatients(query);
+
+        List<Patient> patients;
+        if (utilisateur.role() == com.medapp.backend.model.Role.MEDECIN) {
+            patients = patientService.rechercherPatientsParMedecin(query, utilisateur.id());
+        } else {
+            patients = patientService.rechercherPatients(query);
+        }
 
         List<PatientResponse> responses = patients.stream()
                 .map(patient -> patientMapper.versResponse(patientService.appliquerMasquageSelonRole(patient, utilisateur.role())))
