@@ -28,7 +28,8 @@ const NAV = computed(() => {
   const items = [
     { s: screens.dashboard, label: "Tableau de bord", icon: LayoutDashboard },
     { s: screens.patients, label: "Patients", icon: Users },
-    { s: screens.ordonnances, label: "Ordonnances", icon: FileText },
+    // Ordonnances: accessible to doctors only
+    ...(authStore.role === 'medecin' ? [{ s: screens.ordonnances, label: "Ordonnances", icon: FileText }] : []),
     { s: screens.agenda, label: "Agenda", icon: Calendar },
   ]
   items.push({ s: screens.settings, label: "Paramètres", icon: Settings })

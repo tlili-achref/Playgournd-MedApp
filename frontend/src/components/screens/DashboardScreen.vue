@@ -7,15 +7,19 @@ import {
 import { useMedAppState } from '../../composables/useMedAppState.js'
 import { screens } from '../../constants/medapp.js'
 import { useDashboardStore } from '../../stores/dashboardStore.js'
+import { useAuthStore } from '../../stores/authStore.js'
 
 const { showScreen } = useMedAppState()
 const dashboardStore = useDashboardStore()
+const authStore = useAuthStore()
+const isDoc = computed(() => authStore.role === 'medecin')
 const loading = computed(() => dashboardStore.loading)
 
 const KPIS = computed(() => [
   { label: "Patients aujourd'hui", value: dashboardStore.statistics.patientsToday, icon: Users, bg: "bg-blue-50 dark:bg-blue-900/30", ic: "text-blue-600" },
-  { label: "Ordonnances actives", value: dashboardStore.statistics.activePrescriptions, icon: FileText, bg: "bg-emerald-50 dark:bg-emerald-900/30", ic: "text-emerald-600" },
-  { label: "RDV cette semaine", value: dashboardStore.statistics.appointmentsThisWeek, icon: Calendar, bg: "bg-violet-50 dark:bg-violet-900/30", ic: "text-violet-600" },
+  // Show prescription KPI only for doctors
+  ...(isDoc.value ? [{ label: "Ordonnances actives", value: dashboardStore.statistics.activePrescriptions, icon: FileText, bg: "bg-emerald-50 dark:bg-emerald-900/30", ic: "text-emerald-600" }] : []),
+  { label: "RDV aujourd'hui", value: dashboardStore.statistics.appointmentsToday, icon: Calendar, bg: "bg-violet-50 dark:bg-violet-900/30", ic: "text-violet-600" },
   { label: "Patients actifs", value: dashboardStore.statistics.activePatients, icon: Activity, bg: "bg-amber-50 dark:bg-amber-900/30", ic: "text-amber-600" }
 ])
 
@@ -117,17 +121,18 @@ onMounted(() => dashboardStore.fetchDashboard())
       </template>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div v-motion :initial="{ opacity: 0, y: 18 }" :enter="{ opacity: 1, y: 0, transition: { delay: 360 } }" class="lg:col-span-2">
+    <!-- Charts row: activity + prescription pie (doctors only) -->
+    <div :class="isDoc ? 'grid grid-cols-1 lg:grid-cols-3 gap-4' : 'grid grid-cols-1 gap-4'">
+      <div v-motion :initial="{ opacity: 0, y: 18 }" :enter="{ opacity: 1, y: 0, transition: { delay: 360 } }" :class="isDoc ? 'lg:col-span-2' : 'col-span-1'">
         <div class="rounded-2xl border border-border bg-card p-6 h-full flex flex-col">
           <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
             <div>
               <h3 class="font-semibold text-foreground">Activité médicale</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">Consultations et ordonnances · {{ new Date().getFullYear() }}</p>
+              <p class="text-xs text-muted-foreground mt-0.5">Consultations{{ isDoc ? ' et ordonnances' : '' }} · {{ new Date().getFullYear() }}</p>
             </div>
             <div class="flex gap-4 text-xs text-muted-foreground">
               <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Consultations</span>
-              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />Ordonnances</span>
+              <span v-if="isDoc" class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />Ordonnances</span>
             </div>
           </div>
 
@@ -137,9 +142,9 @@ onMounted(() => dashboardStore.fetchDashboard())
               <line v-for="y in [0,45,90,135,180]" :key="y" x1="0" :y1="y" x2="600" :y2="y" class="stroke-border" stroke-width="1" />
               <path :d="chartAreaPath(CHART.consultations)" class="fill-blue-500/10" />
               <path :d="chartPath(CHART.consultations)" fill="none" class="stroke-blue-500" stroke-width="2.5" vector-effect="non-scaling-stroke" />
-              <path :d="chartPath(CHART.prescriptions)" fill="none" class="stroke-emerald-500" stroke-width="2.5" vector-effect="non-scaling-stroke" />
+              <path v-if="isDoc" :d="chartPath(CHART.prescriptions)" fill="none" class="stroke-emerald-500" stroke-width="2.5" vector-effect="non-scaling-stroke" />
               <circle v-for="(p, i) in CHART.consultations" :key="'c'+i" :cx="p.x" :cy="p.y" r="3" class="fill-blue-500" />
-              <circle v-for="(p, i) in CHART.prescriptions" :key="'p'+i" :cx="p.x" :cy="p.y" r="3" class="fill-emerald-500" />
+              <circle v-if="isDoc" v-for="(p, i) in CHART.prescriptions" :key="'p'+i" :cx="p.x" :cy="p.y" r="3" class="fill-emerald-500" />
             </svg>
             <div class="absolute bottom-0 left-0 right-0 flex justify-between px-0 text-[11px] text-muted-foreground">
               <span v-for="m in CHART.months" :key="m">{{ m }}</span>
@@ -148,7 +153,8 @@ onMounted(() => dashboardStore.fetchDashboard())
         </div>
       </div>
 
-      <div v-motion :initial="{ opacity: 0, y: 18 }" :enter="{ opacity: 1, y: 0, transition: { delay: 440 } }">
+      <!-- Prescription pie: doctors only -->
+      <div v-if="isDoc" v-motion :initial="{ opacity: 0, y: 18 }" :enter="{ opacity: 1, y: 0, transition: { delay: 440 } }">
         <div class="rounded-2xl border border-border bg-card p-6 h-full flex flex-col">
           <h3 class="font-semibold text-foreground">Statut ordonnances</h3>
           <p class="text-xs text-muted-foreground mb-4 mt-0.5">Répartition actuelle</p>

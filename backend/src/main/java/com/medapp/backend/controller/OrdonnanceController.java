@@ -66,6 +66,7 @@ public class OrdonnanceController {
     }
 
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasRole('MEDECIN')")
     public ResponseEntity<List<OrdonnanceResponse>> obtenirHistorique(
         @PathVariable String patientId,
         @RequestParam (required = false) StatutOrdonnance statut,

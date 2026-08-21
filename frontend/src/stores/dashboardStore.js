@@ -256,25 +256,27 @@ export const useDashboardStore = defineStore('dashboard', () => {
             }
         })
 
-        ordonnances.value.forEach(ordonnance => {
-            const date = parseDate(ordonnance.issueDate)
-            if (!date) return
-            const patientLabel = ordonnance.patientName
-                ? `Pour ${ordonnance.patientName}`
-                : ordonnance.patientId
-                    ? `Patient #${ordonnance.patientId}`
-                    : `Ordonnance #${ordonnance.id}`
+        if (authStore.role === 'medecin') {
+            ordonnances.value.forEach(ordonnance => {
+                const date = parseDate(ordonnance.issueDate)
+                if (!date) return
+                const patientLabel = ordonnance.patientName
+                    ? `Pour ${ordonnance.patientName}`
+                    : ordonnance.patientId
+                        ? `Patient #${ordonnance.patientId}`
+                        : `Ordonnance #${ordonnance.id}`
 
-            events.push({
-                id: `prescription-${ordonnance.id}`,
-                title: 'Nouvelle ordonnance',
-                text: `Nouvelle ordonnance · ${patientLabel}`,
-                detail: ordonnance.status ? `${patientLabel} · ${ordonnance.status}` : patientLabel,
-                date,
-                time: date,
-                type: 'prescription'
+                events.push({
+                    id: `prescription-${ordonnance.id}`,
+                    title: 'Nouvelle ordonnance',
+                    text: `Nouvelle ordonnance · ${patientLabel}`,
+                    detail: ordonnance.status ? `${patientLabel} · ${ordonnance.status}` : patientLabel,
+                    date,
+                    time: date,
+                    type: 'prescription'
+                })
             })
-        })
+        }
 
         rendezVous.value.forEach(rdv => {
             const date = parseDateTime(rdv.day, rdv.time)
@@ -324,7 +326,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
         const results = await Promise.all([
             rendezVousStore.fetchRendezVous().catch(err => err),
-            fetchAllOrdonnances().catch(err => err),
+            authStore.role === 'medecin' ? fetchAllOrdonnances().catch(err => err) : Promise.resolve(),
             doctorStore.fetchDoctors().catch(err => err)
         ])
 
