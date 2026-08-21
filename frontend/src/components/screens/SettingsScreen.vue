@@ -9,7 +9,8 @@ import {
   Stethoscope,
   Shield,
   Lock,
-  CheckCircle2
+  CheckCircle2,
+  Info
 } from 'lucide-vue-next'
 import { useMedAppState } from '../../composables/useMedAppState.js'
 import { useAuthStore } from '../../stores/authStore.js'

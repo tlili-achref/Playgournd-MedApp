@@ -50,7 +50,7 @@ describe('authStore', () => {
   describe('login()', () => {
     it('sets isAuthenticated and role on successful login', async () => {
       api.post.mockResolvedValueOnce({
-        data: { accessToken: 'fake-access-token', role: 'MEDECIN' }
+        data: { accessToken: 'fake-access-token', role: 'MEDECIN', nom: 'Martin', prenom: 'Jean', userId: '123' }
       })
 
       const store = useAuthStore()
@@ -58,6 +58,8 @@ describe('authStore', () => {
 
       expect(store.isAuthenticated).toBe(true)
       expect(store.role).toBe('medecin') // mapped from MEDECIN
+      expect(store.user.nom).toBe('Martin')
+      expect(store.user.prenom).toBe('Jean')
       expect(setAccessToken).toHaveBeenCalledWith('fake-access-token')
     })
 

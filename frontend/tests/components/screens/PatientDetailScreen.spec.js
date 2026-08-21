@@ -158,6 +158,9 @@ describe('PatientDetailScreen.vue', () => {
     // Ordonnance action button should not exist (only Ordonnances tab)
     const ordonnanceBtn = wrapper.findAll('button').find(b => b.text().trim() === 'Ordonnance')
     expect(ordonnanceBtn).toBeUndefined()
+    // Ordonnances tab should not exist
+    const ordonnancesTab = wrapper.findAll('button').find(b => b.text().includes('Ordonnances'))
+    expect(ordonnancesTab).toBeUndefined()
     // Social security number should be masked
     expect(wrapper.text()).toContain('Restreint')
   })
