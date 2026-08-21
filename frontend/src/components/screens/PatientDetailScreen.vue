@@ -14,7 +14,8 @@ import {
   AlertCircle,
   FileText,
   Pill,
-  Calendar
+  Calendar,
+  Eye
 } from 'lucide-vue-next'
 import { useMedAppState } from '../../composables/useMedAppState.js'
 import { usePatientStore } from '../../stores/patientStore.js'
@@ -50,11 +51,14 @@ const deletePatient = async () => {
   }
 }
 
-const TABS = [
-  { id: 'overview',       label: 'Aperçu' },
-  { id: 'prescriptions',  label: 'Ordonnances' },
-  { id: 'history',        label: 'Historique' },
-]
+const TABS = computed(() => {
+  const tabs = [ { id: 'overview', label: 'Aperçu' } ]
+  if (isDoc.value) {
+    tabs.push({ id: 'prescriptions', label: 'Ordonnances' })
+  }
+  tabs.push({ id: 'history', label: 'Historique' })
+  return tabs
+})
 
 const fmt = (d) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '–'
 const initials    = (f, l) => `${f?.[0] ?? '?'}${l?.[0] ?? '?'}`.toUpperCase()
@@ -197,14 +201,17 @@ onMounted(async () => {
               <div v-for="rx in patientOrdonnances" :key="rx.id" class="rounded-2xl border border-border bg-card p-4">
                 <div class="flex items-center justify-between mb-3">
                   <span class="text-sm font-semibold text-foreground">{{ fmt(rx.issueDate) }}</span>
-                  <span :class="[
-                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border',
-                      rx.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      rx.status === 'EXPIRED' ? 'bg-red-50 text-red-700 border-red-200' :
-                      'bg-gray-100 text-gray-500 border-gray-200'
-                    ]">
-                      {{ rx.status === 'ACTIVE' ? 'Active' : rx.status === 'EXPIRED' ? 'Expirée' : 'Archivée' }}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <button @click="ordonnanceStore.currentOrdonnance = rx; showScreen(screens.pdfPreview)" class="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Aperçu"><Eye class="w-4 h-4" /></button>
+                    <span :class="[
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border',
+                        rx.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        rx.status === 'EXPIRED' ? 'bg-red-50 text-red-700 border-red-200' :
+                        'bg-gray-100 text-gray-500 border-gray-200'
+                      ]">
+                        {{ rx.status === 'ACTIVE' ? 'Active' : rx.status === 'EXPIRED' ? 'Expirée' : 'Archivée' }}
+                    </span>
+                  </div>
                 </div>
                 <div class="space-y-2">
                   <div v-for="m in rx.medications" :key="m.name" class="flex items-start gap-2 text-sm text-muted-foreground">
