@@ -84,9 +84,9 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
-    // data = { accessToken: string, role: 'MEDECIN' | 'SECRETAIRE' }
+    // data = { userId, accessToken, role }
     // We know the email because the user just typed it — pass it as userData.
-    _setSession(data.accessToken, data.role, { email })
+    _setSession(data.accessToken, data.role, { email, userId: data.userId })
 
     // Navigate to dashboard — import lazily to avoid circular dependency
     const { useMedAppState } = await import('../composables/useMedAppState.js')
@@ -136,7 +136,12 @@ export const useAuthStore = defineStore('auth', () => {
     isInitializing.value = true
     try {
       const { data } = await api.post('/auth/refresh-token')
-      // No userData — user.value already populated from sessionStorage above.
+      // userId is restored from sessionStorage via user.value; update it if the
+      // refresh response carries a fresh one (keeps the stored value in sync).
+      if (data.userId && user.value) {
+        user.value = { ...user.value, userId: data.userId }
+        _persistUser(user.value)
+      }
       _setSession(data.accessToken, data.role)
     } catch {
       // Cookie absent or expired → clear everything including sessionStorage

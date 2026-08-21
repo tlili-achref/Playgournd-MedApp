@@ -46,6 +46,7 @@ export const useRendezVousStore = defineStore('rendezVous', {
       try {
         const response = await api.post('/rendezvous', {
           patientId: payload.patientId,
+          medecinId: payload.medecinId,
           date: payload.day,
           heure: payload.time,
           duree: payload.duration,
@@ -69,6 +70,7 @@ export const useRendezVousStore = defineStore('rendezVous', {
       try {
         const response = await api.put(`/rendezvous/${id}`, {
           patientId: payload.patientId,
+          medecinId: payload.medecinId,
           date: payload.day,
           heure: payload.time,
           duree: payload.duration,

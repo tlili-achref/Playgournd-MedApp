@@ -30,9 +30,8 @@ public class RendezVousController {
             @RequestBody RendezVousRequest request,
             @AuthenticationPrincipal UtilisateurAuthentifie utilisateur) {
         String medecinId = request.getMedecinId();
-        // Fallback for demo purposes if medecin is not provided
         if (medecinId == null || medecinId.isEmpty()) {
-            medecinId = "default-medecin-id";
+            return ResponseEntity.badRequest().build();
         }
         return new ResponseEntity<>(rendezVousService.creerRendezVous(request, medecinId), HttpStatus.CREATED);
     }

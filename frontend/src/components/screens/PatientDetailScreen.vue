@@ -13,13 +13,15 @@ import {
   Loader2,
   AlertCircle,
   FileText,
-  Pill
+  Pill,
+  Calendar
 } from 'lucide-vue-next'
 import { useMedAppState } from '../../composables/useMedAppState.js'
 import { usePatientStore } from '../../stores/patientStore.js'
 import { useDoctorStore } from '../../stores/doctorStore.js'
 import { useOrdonnanceStore } from '../../stores/ordonnanceStore.js'
 import { useAuthStore } from '../../stores/authStore.js'
+import { router } from '../../router/index.js'
 import { screens } from '../../constants/medapp.js'
 import { cn } from '../../lib/utils.js'
 
@@ -30,6 +32,10 @@ const ordonnanceStore = useOrdonnanceStore()
 const authStore = useAuthStore()
 const isDoc = computed(() => authStore.role === 'medecin')
 const isSecretaire = computed(() => authStore.role === 'secretaire')
+
+const openAgendaForPatient = () => {
+  router.push({ name: 'agenda', query: { patientId: patientStore.currentPatient?.id } })
+}
 const tab   = ref('overview')
 const patientOrdonnances = ref([])
 
@@ -120,6 +126,9 @@ onMounted(async () => {
               </button>
               <button v-if="isDoc" @click="openNewOrdonnance(patientStore.currentPatient.id)" class="bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200/50 dark:shadow-blue-900/30 inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring px-3 py-1.5 text-sm gap-1.5">
                 <Plus class="w-4 h-4" /> Ordonnance
+              </button>
+              <button v-if="isSecretaire" @click="openAgendaForPatient" class="bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-200/50 dark:shadow-emerald-900/30 inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring px-3 py-1.5 text-sm gap-1.5">
+                <Calendar class="w-4 h-4" /> Rendez-vous
               </button>
               <button v-if="isSecretaire" class="border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:text-red-500 dark:hover:bg-red-950/30 inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 px-3 py-1.5 text-sm gap-1.5" @click="confirmDelete">
                 <Trash2 class="w-4 h-4" /> Supprimer

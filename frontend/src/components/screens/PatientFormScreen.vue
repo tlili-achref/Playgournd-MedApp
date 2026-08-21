@@ -16,6 +16,7 @@ import { router } from '../../router/index.js'
 import { useMedAppState } from '../../composables/useMedAppState.js'
 import { usePatientStore } from '../../stores/patientStore.js'
 import { useDoctorStore } from '../../stores/doctorStore.js'
+import { useAuthStore } from '../../stores/authStore.js'
 import { screens } from '../../constants/medapp.js'
 import { cn } from '../../lib/utils.js'
 
@@ -23,6 +24,7 @@ const route = useRoute()
 const { showScreen } = useMedAppState()
 const patientStore = usePatientStore()
 const doctorStore = useDoctorStore()
+const authStore = useAuthStore()
 
 // Edit mode is driven by the route itself (/patients/:id/modifier), not by
 // data passed in memory — this keeps the form F5-safe and the URL shareable.
@@ -70,6 +72,9 @@ onMounted(async () => {
     await patientStore.getPatientById(patientId.value)
     fillFormFrom(patientStore.currentPatient)
     loadingPatient.value = false
+  } else if (!isEditMode.value && authStore.role === 'medecin' && authStore.user?.userId) {
+    // Auto-fill the referring doctor with the currently connected doctor
+    form.value.referringDoctor = authStore.user.userId
   }
 })
 

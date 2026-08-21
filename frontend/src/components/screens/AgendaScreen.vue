@@ -17,6 +17,8 @@ import { useMedAppState } from '../../composables/useMedAppState.js'
 import { useAuthStore } from '../../stores/authStore.js'
 import { useRendezVousStore } from '../../stores/rendezVousStore.js'
 import { usePatientStore } from '../../stores/patientStore.js'
+import { useDoctorStore } from '../../stores/doctorStore.js'
+import { useRoute } from 'vue-router'
 import { screens } from '../../constants/medapp.js'
 import { cn } from '../../lib/utils.js'
 
@@ -24,6 +26,8 @@ const { showScreen, viewPatient } = useMedAppState()
 const authStore = useAuthStore()
 const rendezVousStore = useRendezVousStore()
 const patientStore = usePatientStore()
+const doctorStore = useDoctorStore()
+const route = useRoute()
 
 const weekOffset = ref(0)
 // Base is current Monday
@@ -63,7 +67,15 @@ const TYPE_LABELS = {
   "BILAN": "Bilan"
 }
 
-const APPOINTMENTS = computed(() => rendezVousStore.rendezVous)
+// Doctors only see appointments for their own patients (filtered by medecinId).
+// Secretaries see all appointments.
+const APPOINTMENTS = computed(() => {
+  const all = rendezVousStore.rendezVous
+  if (authStore.role === 'medecin' && authStore.user?.userId) {
+    return all.filter(a => a.medecinId === authStore.user.userId)
+  }
+  return all
+})
 
 // Use local date parts to avoid UTC timezone shift (e.g. 2026-08-16 becoming 2026-08-15 in UTC+1)
 const toISO = (d) => {
@@ -91,6 +103,7 @@ const currentRvId = ref(null)
 
 const pq = ref('')
 const selPatient = ref(null)
+const selMedecin = ref(null)   // id of the selected doctor for this appointment
 const showSug = ref(false)
 const formDate = ref(toISO(new Date()))
 const formTime = ref('09:00')
@@ -109,6 +122,7 @@ const openNewRv = (dayIso = toISO(new Date())) => {
   isEditMode.value = false
   currentRvId.value = null
   selPatient.value = null
+  selMedecin.value = null
   pq.value = ''
   formDate.value = dayIso
   formTime.value = '09:00'
@@ -122,6 +136,7 @@ const openEditRv = (rv) => {
   isEditMode.value = true
   currentRvId.value = rv.id
   selPatient.value = patientStore.patients.find(p => p.id === rv.patientId) || { id: rv.patientId, firstName: rv.patientName.split(' ')[0], lastName: rv.patientName.split(' ').slice(1).join(' ') }
+  selMedecin.value = rv.medecinId || null
   pq.value = ''
   formDate.value = rv.day
   formTime.value = rv.time
@@ -132,11 +147,12 @@ const openEditRv = (rv) => {
 }
 
 const saveRv = async () => {
-  if (!selPatient.value) return
+  if (!selPatient.value || !selMedecin.value) return
   submitting.value = true
   try {
     const payload = {
       patientId: selPatient.value.id,
+      medecinId: selMedecin.value,
       day: formDate.value,
       time: formTime.value,
       duration: formDuration.value,
@@ -172,7 +188,24 @@ onMounted(async () => {
   if (patientStore.patients.length === 0) {
     await patientStore.fetchPatients()
   }
+  await doctorStore.fetchDoctors()
   await rendezVousStore.fetchRendezVous()
+
+  // If coming from PatientDetailScreen with a patientId query param,
+  // open the new-appointment modal pre-filled with that patient.
+  const prePatientId = route.query.patientId
+  if (prePatientId) {
+    const found = patientStore.patients.find(p => String(p.id) === String(prePatientId))
+    if (found) {
+      openNewRv()
+      selPatient.value = found
+      pq.value = `${found.firstName} ${found.lastName}`
+      // Pre-fill the doctor from the patient's referringDoctor if available
+      if (found.referringDoctor) {
+        selMedecin.value = found.referringDoctor
+      }
+    }
+  }
 })
 
 const initials = (f = '', l = '') => `${f?.[0] ?? '?'}${l?.[0] ?? '?'}`.toUpperCase()
@@ -342,6 +375,17 @@ const avatarColor = (name = '') => AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AV
           </div>
         </div>
 
+        <!-- Doctor Selection -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-foreground">Médecin *</label>
+          <select v-model="selMedecin" class="w-full h-10 px-3 text-sm bg-background border border-border rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 text-foreground">
+            <option :value="null" disabled>Sélectionner un médecin</option>
+            <option v-for="doc in doctorStore.doctors" :key="doc.id" :value="doc.id">
+              Dr. {{ doc.prenom }} {{ doc.nom }}
+            </option>
+          </select>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-1.5">
             <label class="text-xs font-medium text-foreground">Date *</label>
@@ -350,6 +394,7 @@ const avatarColor = (name = '') => AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AV
               <input type="date" v-model="formDate" class="w-full h-10 pl-9 pr-3 text-sm bg-background border border-border rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 text-foreground" />
             </div>
           </div>
+
           <div class="space-y-1.5">
             <label class="text-xs font-medium text-foreground">Heure *</label>
             <div class="relative">
@@ -388,7 +433,7 @@ const avatarColor = (name = '') => AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AV
         
         <div class="flex gap-2">
           <button @click="showModal = false" class="border border-border text-foreground hover:bg-accent inline-flex items-center justify-center rounded-xl font-medium transition-colors px-4 py-2 text-sm">Annuler</button>
-          <button @click="saveRv" :disabled="!selPatient || !formDate || !formTime || submitting" class="bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center rounded-xl font-medium transition-colors disabled:opacity-50 px-4 py-2 text-sm gap-2">
+          <button @click="saveRv" :disabled="!selPatient || !selMedecin || !formDate || !formTime || submitting" class="bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center rounded-xl font-medium transition-colors disabled:opacity-50 px-4 py-2 text-sm gap-2">
             <Loader2 v-if="submitting" class="w-4 h-4 animate-spin" />
             <FileCheck v-else class="w-4 h-4" />
             Enregistrer
