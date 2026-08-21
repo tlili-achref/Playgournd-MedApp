@@ -115,6 +115,8 @@ public class AuthServiceTest {
         assertEquals("fake-jwt-token", result.accessToken());
         assertNotNull(result.refreshToken());
         assertEquals(Role.MEDECIN, result.role());
+        assertEquals("Jean", result.prenom());
+        assertEquals("Dupont", result.nom());
     }
 
     @Test

@@ -168,7 +168,7 @@ public class PatientControllerIT extends IntegrationTestBase {
 
     @Test
     void listerPatients_retourne200_avecPageDePatients() throws Exception {
-        String token = obtenirAccessToken("medcin-liste@medapp.com", Role.MEDECIN);
+        String token = obtenirAccessToken("secretaire-liste@medapp.com", Role.SECRETAIRE);
 
         PatientRequest request = TestDataFactory.unPatientRequest("1900512100011");
 
@@ -187,7 +187,7 @@ public class PatientControllerIT extends IntegrationTestBase {
 
     @Test
     void recherchePatients_retournePatientsCorrespondants() throws Exception {
-        String token = obtenirAccessToken("medecin-recherche@medapp.com", Role.MEDECIN);
+        String token = obtenirAccessToken("secretaire-recherche@medapp.com", Role.SECRETAIRE);
 
         PatientRequest request = TestDataFactory.unPatientRequest("1900512100012");
 

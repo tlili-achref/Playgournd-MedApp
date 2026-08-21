@@ -69,6 +69,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         request.setDuree(30);
         request.setType("CONSULTATION");
         request.setRemarques("Premiere consultation");
+        request.setMedecinId("doc123");
 
         mockMvc.perform(post("/api/rendezvous")
                         .header("Authorization", "Bearer " + tokenMedecin)
@@ -91,6 +92,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         request.setHeure(LocalTime.of(10, 0));
         request.setDuree(30);
         request.setType("CONSULTATION");
+        request.setMedecinId("doc123");
 
         mockMvc.perform(post("/api/rendezvous")
                         .header("Authorization", "Bearer " + tokenMedecin)
@@ -116,6 +118,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         creationRequest.setHeure(LocalTime.of(10, 0));
         creationRequest.setDuree(30);
         creationRequest.setType("CONSULTATION");
+        creationRequest.setMedecinId("doc123");
 
         MvcResult result = mockMvc.perform(post("/api/rendezvous")
                         .header("Authorization", "Bearer " + tokenMedecin)
@@ -132,6 +135,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         modificationRequest.setHeure(LocalTime.of(14, 30));
         modificationRequest.setDuree(45);
         modificationRequest.setType("SUIVI");
+        modificationRequest.setMedecinId("doc123");
 
         mockMvc.perform(put("/api/rendezvous/" + rdvId)
                         .header("Authorization", "Bearer " + tokenMedecin)
@@ -153,6 +157,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         creationRequest.setHeure(LocalTime.of(10, 0));
         creationRequest.setDuree(30);
         creationRequest.setType("CONSULTATION");
+        creationRequest.setMedecinId("doc123");
 
         MvcResult result = mockMvc.perform(post("/api/rendezvous")
                         .header("Authorization", "Bearer " + tokenMedecin)
@@ -182,6 +187,7 @@ public class RendezVousControllerIT extends IntegrationTestBase {
         creationRequest.setHeure(LocalTime.of(10, 0));
         creationRequest.setDuree(30);
         creationRequest.setType("CONSULTATION");
+        creationRequest.setMedecinId("doc123");
 
         MvcResult result = mockMvc.perform(post("/api/rendezvous")
                         .header("Authorization", "Bearer " + tokenMedecin)

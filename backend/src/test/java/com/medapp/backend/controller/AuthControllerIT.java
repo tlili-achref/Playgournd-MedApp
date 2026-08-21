@@ -116,6 +116,8 @@ public class AuthControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
                 .andExpect(jsonPath("$.refreshToken").doesNotExist())
+                .andExpect(jsonPath("$.prenom").exists())
+                .andExpect(jsonPath("$.nom").exists())
                 .andExpect(cookie().exists("refresh_token"))
                 .andExpect(cookie().httpOnly("refresh_token", true));
     }
