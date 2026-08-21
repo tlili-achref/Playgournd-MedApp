@@ -156,7 +156,8 @@ vi.mock('../../src/stores/authStore.js', () => ({
     useAuthStore: () => ({
         user: {
             email: 'doctor@test.tn'
-        }
+        },
+        role: 'medecin'
     })
 }))
 
